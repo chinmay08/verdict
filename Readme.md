@@ -31,7 +31,7 @@ The following Python packages are required and can be installed via pip:
 1. Clone the repository:
    ```bash
    git clone <repository-url>
-   cd dataguardian
+   cd victor
    ```
 
 2. Install dependencies:
@@ -118,16 +118,15 @@ WINNER: gpt-3.5-turbo (quality=5.00 latency=2383ms)
 ## Project Structure
 
 ```
-dataguardian/
-├── verdict/
+verdict/
 │   ├── core.py      # Main experiment logic and statistical analysis
 │   ├── judge.py     # LLM-based judging system
 │   ├── display.py   # Report generation and formatting
 │   └── utils.py     # Utility functions and data structures
-├── test_run.py      # Example benchmarking script
-├── verdict_results.json  # Output results file
-├── .env             # Environment variables (not committed)
-└── Readme.md        # This file
+test_run.py      # Example benchmarking script
+verdict_results.json  # Output results file
+.env             # Environment variables (not committed)
+Readme.md        # This file
 ```
 
 ## Contributing
