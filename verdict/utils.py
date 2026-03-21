@@ -6,8 +6,8 @@ from typing import Any, Callable, Optional, Dict
 class RunRecord:
     model: str
     query: str
-    run_index: str
-    respponse: str
+    # run_index: str
+    response: str
     quality: float
     latency_ms: float
     cost: float

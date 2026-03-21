@@ -5,7 +5,7 @@ import statistics
 from dataclasses import dataclass, field
 from typing import Callable, Dict, List, Optional, Tuple
 
-from utils import timed_call, safe_float, QueryMin, Comparison, ModelStats, RunRecord
+from .utils import timed_call, safe_float, QueryMin, Comparison, ModelStats, RunRecord
 
 def _welch(vals_a: List[float], vals_b: List[float]) -> Tuple[float, float, float, float, float]:
 
@@ -50,31 +50,37 @@ class Results:
         self.model_names = model_names
         self.stats : dict[str, ModelStats] = {}
         self.comparisons: List[Comparison] = []
-        self.query_wins: Dict[str, Dict[str,int]] ={}
+        self.query_wins: List[QueryMin] ={}
+        self._analyze()
 
     def _by_model(self, m): return [r for r in self.records if r.model ==m]
 
     def _analyze(self):
         for m in self.model_names:
+            print(f"Analyzing model {m}...")
             recs = self._by_model(m)
             q = [r.quality for r in recs]
-            l = [r.latency for r in recs]
+            l = [r.latency_ms for r in recs]
             self.stats[m] = ModelStats(
-                mode=m,
+                model=m,
                 quality_mean=statistics.mean(q),
                 quality_std=statistics.stdev(q) if len(q) >= 2 else 0,
                 latency_mean=statistics.mean(l),
                 latency_std=statistics.stdev(l) if len(l) >= 2 else 0,
                 cost_total=sum( r.cost for r in recs),
+                cost_mean=statistics.mean( r.cost for r in recs),
                 n_runs = len(recs),
             )
+            print(f" Model {m}: quality={self.stats[m].quality_mean:.2f}±{self.stats[m].quality_std:.2f}")
         for i, a in enumerate(self.model_names):
-            for b in self.model_names[i+1]:
+            print("MODELS",self.model_names)
+            for b in self.model_names[i+1:]:
                 for metric in ("quality", "latency_ms"):
-                    va = [getattr(r,metric) for r in self._by_mode(a)]
-                    vb = [getattr(r,metric) for r in self._by_mode(b)]
+                    va = [getattr(r,metric) for r in self._by_model(a)]
+                    vb = [getattr(r,metric) for r in self._by_model(b)]
+                    # print(f" Comparing {a} vs {b} on {metric}...{va} vs {vb}")
                     t, p, d, ci_lo, ci_hi = _welch(va, vb)
-
+                    # print(f"  t={t:.2f} p={p:.4f} d={d:.2f} CI[{ci_lo:.2f}, {ci_hi:.2f}]")
                     winner = None
                     if p < 0.05:
                         if metric == "quality":
@@ -102,10 +108,11 @@ class Results:
                 self.query_wins[q] = wins
     @property
     def winner(self) -> str: 
+        print(self.stats)
         return max(self.stats, key=lambda m: self.stats[m].quality_mean)
     
     def report(self, verbose:bool = True):
-        from display import display_report
+        from .display import display_report
         return display_report(self, verbose)
     
     def to_dict(self):
@@ -120,8 +127,8 @@ class Experiment:
         self.models = models
         self.judge = judge
         self.costs = cost_per_call or {}
-    def run(self, queries: List[str], runs: int=3, verbose: bool = True):
-        names = list(self.model.keys())
+    def run(self, queries: List[str], runs: int=1, verbose: bool = True):
+        names = list(self.models.keys())
         records = []
         total = len(names)*len(queries)*runs
 
@@ -138,7 +145,7 @@ class Experiment:
                     records.append(RunRecord(
                         model = name, query = q, response = resp,
                         quality = score, latency_ms = lat,
-                        cost = self.costrs.get(name,0)
+                        cost = self.costs.get(name,0)
                     ))
                     done+=1
                     if verbose:

@@ -42,7 +42,7 @@ class LLMJudge:
         self._total_calls = 0
 
     def __call__(self, query:str, response: str) -> float:
-        prompt = self.template.format(quer=query, response=response)
+        prompt = self.template.format(query=query, response=response)
         raw = self.llm_call(prompt)
         self._total_calls +=1
         return _extract_score(raw if isinstance(raw, str) else str(raw))

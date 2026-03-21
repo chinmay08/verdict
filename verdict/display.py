@@ -18,7 +18,7 @@ def _eff(d):
     if d < 0.8: return "medium"
     return "large"
 
-def display_report(results: "Results", verbose = True):
+def display_report(results: Results, verbose = True):
     out = []
     W = 64
 
@@ -27,7 +27,7 @@ def display_report(results: "Results", verbose = True):
     out.append("="*W)
 
     out.append("")
-    out.append(f" {'Model':<15} {'Quality':>8} {'+/- Std': > 7} {'Latency':>9} {'Cost':>8}")
+    out.append(f" {'Model':<15} {'Quality':>8} {'+/- Std':>7} {'Latency':>9} {'Cost':>8}")
     out.append(" "+"-"*(W-4))
 
     ranked = sorted(results.stats.values(), key=lambda s: s.quality_mean, reverse = True)
@@ -65,6 +65,7 @@ def display_report(results: "Results", verbose = True):
             total = sum(wins.values())
             cols = "".join(
                 f"{wins.get(m,0)}/{total:>2} ({wins.get(m,0)/total*100:.0f}%)".rjust(12)
+                for m in models
             )
         label = q if len(q) <= 28 else q[:27]+",,,"
         out.append(f" {label:<30}{cols}")
