@@ -5,6 +5,7 @@ from typing import Callable, Optional
 
 DEFAULT_JUDGE_PROMPT = """You are an impartial evaluator. Score the following response to the given query on a scale 1 to 10.
 
+
 CRITERIA:
 - Accuracy: Is the information correct ?
 - Completeness: Does it fully address the query ?
